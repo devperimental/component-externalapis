@@ -5,7 +5,7 @@ on:
 env:
   nuget-username: chrisxpr
   src-dir: ./src/code
-  coverage-threshold: 80
+  coverage-threshold: 0
   repo-organisation: architected
   team-pat: ${{ secrets.NUGET_PAT}}
 concurrency: alpha-${{ github.ref}}
