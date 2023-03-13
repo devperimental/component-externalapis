@@ -8,7 +8,7 @@ env:
   build-environment: dev
   coverage-threshold: 90
   repo-organisation: architected
-  team-pat: ${{ secrets.TEAM_PAT}}
+  team-pat: ${{ secrets.NUGET_PAT}}
 concurrency: alpha-${{ github.ref}}
 jobs:
   dotnetBuild:
