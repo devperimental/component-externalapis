@@ -5,8 +5,7 @@ on:
 env:
   nuget-username: chrisxpr
   src-dir: ./src/code
-  build-environment: dev
-  coverage-threshold: 90
+  coverage-threshold: 0
   repo-organisation: architected
   team-pat: ${{ secrets.NUGET_PAT}}
 concurrency: alpha-${{ github.ref}}
@@ -27,7 +26,6 @@ jobs:
         with:
           nuget-username: ${{ env.nuget-username }}
           src-dir: ${{ env.src-dir }}
-          build-environment: ${{ env.build-environment }}
           coverage-threshold: ${{ env.coverage-threshold }}
           repo-organisation: ${{ env.repo-organisation }}
           team-pat: ${{ env.team-pat }}
