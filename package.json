@@ -14,12 +14,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Architected/component-externalapis.git"
+    "url": "git+https://github.com/devperimental/component-externalapis.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Architected/component-externalapis/issues"
+    "url": "https://github.com/devperimental/component-externalapis/issues"
   },
-  "homepage": "https://github.com/Architected/component-externalapis#readme"
+  "homepage": "https://github.com/devperimental/component-externalapis#readme"
 }
