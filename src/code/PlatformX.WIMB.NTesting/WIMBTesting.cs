@@ -4,38 +4,31 @@ using Moq.Protected;
 using NUnit.Framework;
 using PlatformX.BrowserCheck.Types.DataContract;
 using PlatformX.Http.Helper;
-using PlatformX.Settings.Shared.Behaviours;
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Threading;
 
 namespace PlatformX.WIMB.NTesting
 {
     public class WIMBTests
     {
+        private WIMBConfiguration _configuration;
+
         [SetUp]
         public void Setup()
         {
+            _configuration = new WIMBConfiguration
+            {
+                ApiKey = "WIMB-APIKEY",
+                ApiUrl = "https://api.whatismybrowser.com/api/v2/user_agent_parse"
+            };
         }
 
 
         [Test]
-        public void TestWIMBCheck()
+        public async Task TestWIMBCheck()
         {
-            var appSettings = new Mock<IPortalSettings>();
-
-            var token = "WIMB-APIKEY"; // Environment.GetEnvironmentVariable("WIMB-APIKEY");
-
-            appSettings.Setup(c => c.GetPortalSetting<string>("WIMBKeyName")).Returns("WIMB-APIKEY");
-            appSettings.Setup(c => c.GetPortalSetting<string>("WIMBApiUrl")).Returns("https://api.whatismybrowser.com/api/v2/user_agent_parse");
-            appSettings.Setup(c => c.GetSecretString("WIMB-APIKEY")).Returns(token);
-
             var request = new BrowserCheckRequest
             {
                 UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36"
             };
-
 
             var responseData = "{ \"result\": { \"code\" : \"success\", \"message_code\" : \"success\", \"message\" : \"success\" }, \"parse\": { \"user_agent\" : \"internet explorer\" } }";
             var appLogger = new Mock<ILogger<HttpRequestHelper>>();
@@ -44,9 +37,9 @@ namespace PlatformX.WIMB.NTesting
 
             var httpRequestHelper = new HttpRequestHelper(httpClientFactoryMock.Object, appLogger.Object);
             
-            var client = new WIMBBrowserCheck(appSettings.Object, httpRequestHelper);
+            var client = new WIMBBrowserCheck(_configuration, httpRequestHelper);
 
-            var response = client.CheckUserAgent(request);
+            var response = await client.CheckUserAgent(request);
 
             Assert.IsTrue(response.Result.Code == "success");
         }

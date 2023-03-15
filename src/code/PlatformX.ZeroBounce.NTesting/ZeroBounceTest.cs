@@ -3,11 +3,6 @@ using Moq.Protected;
 using NUnit.Framework;
 using PlatformX.Http.Helper;
 using PlatformX.MailboxCheck.Types.DataContract;
-using PlatformX.Settings.Shared.Behaviours;
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace PlatformX.ZeroBounce.NTesting
@@ -15,26 +10,20 @@ namespace PlatformX.ZeroBounce.NTesting
     [TestFixture]
     public class Tests
     {
+        private ZeroBounceConfiguration _configuration;
         [SetUp]
         public void Setup()
         {
-
+            _configuration = new ZeroBounceConfiguration
+            {
+                ApiKey = "ZEROBOUNCE-APIKEY",
+                ApiUrl = "https://api.zerobounce.net/v2/validate?api_key={0}&email={1}&ip_address="
+            };
         }
 
         [Test]
-        public void TestMailboxCheckValid()
+        public async Task TestMailboxCheckValid()
         {
-            var appSettings = new Mock<IPortalSettings>();
-
-            var token = "ZEROBOUNCE-APIKEY"; // Environment.GetEnvironmentVariable("ZEROBOUNCE-APIKEY");
-
-            appSettings.Setup(c => c.GetPortalSetting<bool>("ZeroBounceAllowFailRequest")).Returns(true);
-
-            appSettings.Setup(c => c.GetPortalSetting<string>("ZeroBounceKeyName")).Returns("ZEROBOUNCE-APIKEY");
-            appSettings.Setup(c => c.GetPortalSetting<string>("ZeroBounceApiUrl")).Returns("https://api.zerobounce.net/v2/validate?api_key={0}&email={1}&ip_address=");
-
-            appSettings.Setup(c => c.GetSecretString("ZEROBOUNCE-APIKEY")).Returns(token);
-
             var request = new MailboxCheckRequest
             {
                 EmailAddress = "farinella@gmail.com",
@@ -46,25 +35,16 @@ namespace PlatformX.ZeroBounce.NTesting
             var httpClientFactoryMock = CreateHttpClientFactoryMock(responseData);
             var httpRequestHelper = new HttpRequestHelper(httpClientFactoryMock.Object, appLogger.Object);
 
-            var client = new ZeroBounceMailboxCheck(appSettings.Object, httpRequestHelper);
+            var client = new ZeroBounceMailboxCheck(_configuration, httpRequestHelper);
 
-            var response = client.CheckEmailAddress(request);
+            var response = await client.CheckEmailAddress(request);
 
             Assert.IsTrue(response.Status == "valid");
         }
 
         [Test]
-        public void TestMailboxCheckDidYouMean()
+        public async Task TestMailboxCheckDidYouMean()
         {
-            var appSettings = new Mock<IPortalSettings>();
-
-            var token = "ZEROBOUNCE-APIKEY"; // Environment.GetEnvironmentVariable("ZEROBOUNCE-APIKEY");
-
-            appSettings.Setup(c => c.GetPortalSetting<string>("ZeroBounceKeyName")).Returns("ZEROBOUNCE-APIKEY");
-            appSettings.Setup(c => c.GetPortalSetting<string>("ZeroBounceApiUrl")).Returns("https://api.zerobounce.net/v2/validate?api_key={0}&email={1}&ip_address=");
-
-            appSettings.Setup(c => c.GetSecretString("ZEROBOUNCE-APIKEY")).Returns(token);
-
             var request = new MailboxCheckRequest
             {
                 EmailAddress = "farinella@gnail.com",
@@ -76,25 +56,16 @@ namespace PlatformX.ZeroBounce.NTesting
             var httpClientFactoryMock = CreateHttpClientFactoryMock(responseData);
             var httpRequestHelper = new HttpRequestHelper(httpClientFactoryMock.Object, appLogger.Object);
 
-            var client = new ZeroBounceMailboxCheck(appSettings.Object, httpRequestHelper);
+            var client = new ZeroBounceMailboxCheck(_configuration, httpRequestHelper);
 
-            var response = client.CheckEmailAddress(request);
+            var response = await client.CheckEmailAddress(request);
 
             Assert.IsTrue(!string.IsNullOrEmpty(response.DidYouMean));
         }
 
         [Test]
-        public void TestMailboxCheckInvalid()
+        public async Task TestMailboxCheckInvalid()
         {
-            var appSettings = new Mock<IPortalSettings>();
-
-            var token = "ZEROBOUNCE-APIKEY"; // Environment.GetEnvironmentVariable("ZEROBOUNCE-APIKEY");
-
-            appSettings.Setup(c => c.GetPortalSetting<string>("ZeroBounceKeyName")).Returns("ZEROBOUNCE-APIKEY");
-            appSettings.Setup(c => c.GetPortalSetting<string>("ZeroBounceApiUrl")).Returns("https://api.zerobounce.net/v2/validate?api_key={0}&email={1}&ip_address=");
-
-            appSettings.Setup(c => c.GetSecretString("ZEROBOUNCE-APIKEY")).Returns(token);
-
             var request = new MailboxCheckRequest
             {
                 EmailAddress = "farinella@gk.in",
@@ -106,9 +77,9 @@ namespace PlatformX.ZeroBounce.NTesting
             var httpClientFactoryMock = CreateHttpClientFactoryMock(responseData);
             var httpRequestHelper = new HttpRequestHelper(httpClientFactoryMock.Object, appLogger.Object);
 
-            var client = new ZeroBounceMailboxCheck(appSettings.Object, httpRequestHelper);
+            var client = new ZeroBounceMailboxCheck(_configuration, httpRequestHelper);
 
-            var response = client.CheckEmailAddress(request);
+            var response = await client.CheckEmailAddress(request);
 
             Assert.IsTrue(response.Status == "invalid");
         }

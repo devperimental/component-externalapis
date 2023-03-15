@@ -1,10 +1,10 @@
 ﻿using PlatformX.IpCheck.Types.DataContract;
-using System;
+using System.Threading.Tasks;
 
 namespace PlatformX.IpCheck.Types
 {
     public interface IIpCheckProvider
     {
-        IpCheckResponse CheckIp(IpCheckRequest request);
+        Task<IpCheckResponse> CheckIp(IpCheckRequest request);
     }
 }
