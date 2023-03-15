@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/devperimental/component-externalapis/compare/v1.0.0...v1.1.0) (2023-03-15)
+
+
+### Features
+
+* rework of configuration pattern ([ec2359a](https://github.com/devperimental/component-externalapis/commit/ec2359ac69866536a89a97e259d9382de9c3c7f6))
+
 # 1.0.0 (2023-03-14)
 
 
