@@ -4,37 +4,29 @@ using NUnit.Framework;
 using PlatformX.Fraudguard;
 using PlatformX.Http.Helper;
 using PlatformX.IpCheck.Types.DataContract;
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Threading;
 using Microsoft.Extensions.Logging;
-using PlatformX.Settings.Shared.Behaviours;
+using PlatformX.ZeroBounce;
 
 namespace PlatformX.FraudGuard.NTesting
 {
     public class FraudGuardTesting
     {
+        private FraudGuardConfiguration _configuration;
+
         [SetUp]
         public void Setup()
         {
+            _configuration = new FraudGuardConfiguration
+            {
+                UserName = "FRAUDGUARD-APIUSERNAME",
+                Password = "FRAUDGUARD-APIPASSWORD",
+                UrlPattern = "https://api.fraudguard.io/ip/{0}"
+            };
         }
 
         [Test]
-        public void TestFraudguardCheck()
+        public async Task TestFraudguardCheck()
         {
-            var appSettings = new Mock<IPortalSettings>();
-
-            var userName = "FRAUDGUARD-APIUSERNAME"; // Environment.GetEnvironmentVariable("FRAUDGUARD-APIUSERNAME");
-            var password = "FRAUDGUARD-APIPASSWORD"; //Environment.GetEnvironmentVariable("FRAUDGUARD-APIPASSWORD");
-
-            appSettings.Setup(c => c.GetPortalSetting<string>("FraudguardApiUserNameKeyName")).Returns("FRAUDGUARD-APIUSERNAME");
-            appSettings.Setup(c => c.GetPortalSetting<string>("FraudguardApiPasswordKeyName")).Returns("FRAUDGUARD-APIPASSWORD");
-            appSettings.Setup(c => c.GetPortalSetting<string>("FraudguardApiUrlPattern")).Returns("https://api.fraudguard.io/ip/{0}");
-
-            appSettings.Setup(c => c.GetSecretString("FRAUDGUARD-APIUSERNAME")).Returns(userName);
-            appSettings.Setup(c => c.GetSecretString("FRAUDGUARD-APIPASSWORD")).Returns(password);
-
             var request = new IpCheckRequest
             {
                 IpAddress = "147.135.36.62"
@@ -45,9 +37,9 @@ namespace PlatformX.FraudGuard.NTesting
             var httpClientFactoryMock = CreateHttpClientFactoryMock(responseData);
             var httpRequestHelper = new HttpRequestHelper(httpClientFactoryMock.Object, appLogger.Object);
 
-            var client = new FraudGuardIpCheck(appSettings.Object, httpRequestHelper);
+            var client = new FraudGuardIpCheck(_configuration, httpRequestHelper);
 
-            var response = client.CheckIp(request);
+            var response = await client.CheckIp(request);
 
             Assert.IsTrue(!string.IsNullOrEmpty(response.RiskLevel));
         }

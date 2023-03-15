@@ -1,49 +1,33 @@
 ﻿using PlatformX.Http.Behaviours;
 using PlatformX.MailboxCheck.Types.Behaviours;
 using PlatformX.MailboxCheck.Types.DataContract;
-using PlatformX.Settings.Shared.Behaviours;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace PlatformX.ZeroBounce
 {
     public class ZeroBounceMailboxCheck : IMailboxCheckProvider
     {
-        private readonly IPortalSettings _appSettings;
+        private readonly ZeroBounceConfiguration _configuration;
         private readonly IHttpRequestHelper _httpHelper;
-      
-        public ZeroBounceMailboxCheck(IPortalSettings appSettings, IHttpRequestHelper httpHelper)
+
+        public ZeroBounceMailboxCheck(ZeroBounceConfiguration configuration, IHttpRequestHelper httpHelper)
         {
-            if (appSettings == null)
-            {
-                throw new ArgumentNullException("appSettings", "appSettings is null");
-            }
-
-            if (httpHelper == null)
-            {
-                throw new ArgumentNullException("httpHelper", "httpHelper is null");
-            }
-
-            _appSettings = appSettings;
-            _httpHelper = httpHelper;
+            _configuration = configuration;
+            _httpHelper = httpHelper ?? throw new ArgumentNullException("httpHelper", "httpHelper is null");
         }
 
-        public MailboxCheckResponse CheckEmailAddress(MailboxCheckRequest request)
+        public async Task<MailboxCheckResponse> CheckEmailAddress(MailboxCheckRequest request)
         {
-            var urlFormat = _appSettings.GetPortalSetting<string>("ZeroBounceApiUrl");
+            var urlFormat = _configuration.ApiUrl;
             if (string.IsNullOrEmpty(urlFormat))
             {
                 throw new ArgumentNullException("urlFormat", "ZeroBounceApiUrl is empty");
             }
 
-            var keyName = _appSettings.GetPortalSetting<string>("ZeroBounceKeyName");
-            if (string.IsNullOrEmpty(keyName))
-            {
-                throw new ArgumentNullException("keyName", "ZeroBounceKeyName is empty");
-            }
-
-            var apiKey = _appSettings.GetSecretString(keyName);
+            var apiKey = _configuration.ApiKey;
             if (string.IsNullOrEmpty(apiKey))
             {
                 throw new ArgumentNullException("apiKey", "ZeroBounceKeyName value is empty");
@@ -53,9 +37,9 @@ namespace PlatformX.ZeroBounce
             var data = string.Empty;
             var headers = new Dictionary<string, string>();
 
-            var response = _httpHelper.SubmitRequest<MailboxCheckResponse>(url, HttpMethod.Get, data, headers);
+            var response = await _httpHelper.SubmitRequest<MailboxCheckResponse>(url, HttpMethod.Get, data, headers);
 
-            return response.Result;
+            return response;
         }
     }
 }

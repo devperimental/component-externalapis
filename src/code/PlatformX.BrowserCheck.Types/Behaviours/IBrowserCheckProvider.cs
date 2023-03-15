@@ -1,10 +1,10 @@
 ﻿using PlatformX.BrowserCheck.Types.DataContract;
-using System;
+using System.Threading.Tasks;
 
 namespace PlatformX.BrowserCheck.Types
 {
     public interface IBrowserCheckProvider
     {
-        BrowserCheckResponse CheckUserAgent(BrowserCheckRequest request);
+        Task<BrowserCheckResponse> CheckUserAgent(BrowserCheckRequest request);
     }
 }

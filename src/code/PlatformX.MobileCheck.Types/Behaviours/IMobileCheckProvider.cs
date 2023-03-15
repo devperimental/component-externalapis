@@ -1,10 +1,11 @@
 ﻿using PlatformX.MobileCheck.Types.DataContract;
 using System;
+using System.Threading.Tasks;
 
 namespace PlatformX.MobileCheck.Types
 {
     public interface IMobileCheckProvider
     {
-        MobileCheckResponse CheckNumber(MobileCheckRequest request);
+        Task<MobileCheckResponse> CheckNumber(MobileCheckRequest request);
     }
 }

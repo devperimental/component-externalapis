@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <PackageReference Include="PlatformX.Http.Behaviours" Version="1.1.0" />
-    <PackageReference Include="PlatformX.Settings.Shared" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>

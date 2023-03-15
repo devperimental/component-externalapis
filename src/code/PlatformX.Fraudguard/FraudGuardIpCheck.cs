@@ -1,76 +1,55 @@
 ﻿using PlatformX.Http.Behaviours;
 using PlatformX.IpCheck.Types;
 using PlatformX.IpCheck.Types.DataContract;
-using PlatformX.Settings.Shared.Behaviours;
+using PlatformX.ZeroBounce;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace PlatformX.Fraudguard
 {
     public class FraudGuardIpCheck : IIpCheckProvider
     {
-        private readonly IPortalSettings _appSettings;
+        private readonly FraudGuardConfiguration _configuration;
         private readonly IHttpRequestHelper _httpHelper;
         
-        public FraudGuardIpCheck(IPortalSettings appSettings, IHttpRequestHelper httpHelper)
+        public FraudGuardIpCheck(FraudGuardConfiguration configuration, IHttpRequestHelper httpHelper)
         {
-            if (appSettings == null)
-            {
-                throw new ArgumentNullException("appSettings", "appSettings is null");
-            }
-
-            if (httpHelper == null)
-            {
-                throw new ArgumentNullException("httpHelper", "httpHelper is null");
-            }
-
-            _appSettings = appSettings;
-            _httpHelper = httpHelper;
+            _configuration = configuration;
+            _httpHelper = httpHelper ?? throw new ArgumentNullException("httpHelper", "httpHelper is null");
         }
 
-        public IpCheckResponse CheckIp(IpCheckRequest request)
+        public async Task<IpCheckResponse> CheckIp(IpCheckRequest request)
         {
-            var urlPattern = _appSettings.GetPortalSetting<string>("FraudguardApiUrlPattern");
+            var urlPattern = _configuration.UrlPattern;
             if (string.IsNullOrEmpty(urlPattern))
             {
                 throw new ArgumentNullException("urlPattern", "FraudguardApiUrlPattern is empty");
             }
 
-            var userNameKeyName = _appSettings.GetPortalSetting<string>("FraudguardApiUserNameKeyName");
-            if (string.IsNullOrEmpty(userNameKeyName))
-            {
-                throw new ArgumentNullException("userNameKeyName", "FraudguardApiUserNameKeyName is empty");
-            }
-
-            var passwordKeyName = _appSettings.GetPortalSetting<string>("FraudguardApiPasswordKeyName");
-            if (string.IsNullOrEmpty(passwordKeyName))
-            {
-                throw new ArgumentNullException("passwordKeyName", "FraudguardApiUserNameKeyName is empty");
-            }
-
-            var userName = _appSettings.GetSecretString(userNameKeyName);
+            var userName = _configuration.UserName;
             if (string.IsNullOrEmpty(userName))
             {
                 throw new ArgumentNullException("userName", "value is empty");
             }
 
-            var password = _appSettings.GetSecretString(passwordKeyName);
+            var password = _configuration.Password;
             if (string.IsNullOrEmpty(password))
             {
                 throw new ArgumentNullException("password", "value is empty");
             }
 
             var url = string.Format(urlPattern, request.IpAddress);
-            var token = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(userName + ":" + password));
+            var token = Convert.ToBase64String(Encoding.ASCII.GetBytes(userName + ":" + password));
             var headers = new Dictionary<string, string> {
                 { "Authorization", $"Basic {token}" }
             };
 
-            var response = _httpHelper.SubmitRequest<IpCheckResponse>(url, HttpMethod.Get, string.Empty, headers);
+            var response = await _httpHelper.SubmitRequest<IpCheckResponse>(url, HttpMethod.Get, string.Empty, headers);
 
-            return response.Result;
+            return response;
         }
     }
 }
